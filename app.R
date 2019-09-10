@@ -70,8 +70,10 @@ ui <- dashboardPage(
                 ),
                 
                 box (
+                  width = 9,
                   title = "Résultats",
-                  "Les indices de superposition vont apparaitre ici."
+                  "Les indices de superposition vont apparaitre ici.", br(),
+                  actionButton("but_telecharger_colab", "Télécharger les résultats")
                 )
               )
       ),
@@ -84,12 +86,15 @@ ui <- dashboardPage(
                           "application/zip",
                           ".zip")
               ),
-              "ici vont app les carac du corpus"
+              "ici vont app les carac du corpus", br(), br(),
+              actionButton("but_telecharger_ind_corpus", "Télécharger caractéristiques du corpus")
       ),
       
       # Fourth tab content
       tabItem(tabName = "parsing",
               h1("Parsing"),
+              actionButton("but_telecharger_parsing", "Télécharger le tableau d'analyse lexicale"),
+              br(), br(),
               "le long tableau va app ici"
       )
     )
