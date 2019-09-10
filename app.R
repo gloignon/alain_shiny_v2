@@ -5,15 +5,18 @@ ui <- dashboardPage(
   
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Entrée de données", tabName = "input", icon = icon("file-alt")),
-      menuItem("Configuration", tabName = "config", icon = icon("cogs"))
+      menuItem("Lisibilité", tabName = "lisibilite", icon = icon("eye-open", lib = "glyphicon")),
+      menuItem("Superpositions", tabName = "overlap", icon = icon("file-alt")),
+      menuItem("Analyse de corpus", tabName = "corpus", icon = icon("folder-open", lib = "glyphicon")),
+      menuItem("Voir le parsing", tabName = "parsing", icon = icon("th-list", lib = "glyphicon"))
     )
   ),
   
   dashboardBody(
     tabItems(
       # First tab content
-      tabItem(tabName = "input",
+      tabItem(tabName = "lisibilite",
+              h1("Production d'indices de lisibilité"),
               fluidRow(
                 box(plotOutput("plot1", height = 250)),
                 
@@ -25,8 +28,18 @@ ui <- dashboardPage(
       ),
       
       # Second tab content
-      tabItem(tabName = "config",
-              h2("Widgets tab content")
+      tabItem(tabName = "overlap",
+              h1("Analyse des superpositions lexicales")
+      ),
+      
+      # Third tab content
+      tabItem(tabName = "corpus",
+              h1("Analyse de corpus")
+      ),
+      
+      # Fourth tab content
+      tabItem(tabName = "parsing",
+              h1("Parsing")
       )
     )
   )
