@@ -20,23 +20,60 @@ ui <- dashboardPage(
       tabItem(tabName = "lisibilite",
               h1("Production d'indices de lisibilité"),
               fluidRow(
-                box(plotOutput("plot1", height = 250)),
+                box (
+                  title = "Entrez du texte ici",
+                  solidHeader = TRUE,
+                  collapsible = FALSE,
+                  width = 3,
+                  "Des truc peuvent s'écrire ici",
+                  textAreaInput(inputId="boite_lisib",
+                                label = "",
+                                placeholder = "entrez texte ici",
+                                value = default.input,
+                                height = "400"),
+                  actionButton("but_calculer_lisib", "Calculer les indices de lisibilité")
+                ),
                 
-                box(
-                  title = "Controls",
-                  sliderInput("slider", "Number of observations:", 1, 100, 50)
+                box (
+                  title = "Résultats",
+                  "Les indices de lisibilité du parag vont apparaitre ici."
                 )
               )
       ),
       
       # Second tab content
-      tabItem(tabName = "overlap",
-              h1("Analyse des superpositions lexicales")
+        tabItem(tabName = "overlap",
+              h1("Évaluation des superpositions lexicales."),
+              fluidRow(
+                box (
+                  title = "Entrez du texte ici",
+                  solidHeader = TRUE,
+                  collapsible = FALSE,
+                  width = 3,
+                  "Des truc peuvent s'écrire ici",
+                  textAreaInput(inputId="boite_overlap",
+                                label = "",
+                                placeholder = "entrez texte ici",
+                                value = default.input,
+                                height = "400"),
+                  actionButton("but_calculer_overlap", "Calculer les superpositions")
+                ),
+                
+                box (
+                  title = "Résultats",
+                  "Les indices de superposition vont apparaitre ici."
+                )
+              )
       ),
       
       # Third tab content
       tabItem(tabName = "corpus",
-              h1("Analyse de corpus")
+              h1("Analyse de corpus"),
+              fileInput("fichier_corpus", "Sélectionnez votre fichier zip",
+                        accept = c(
+                          "application/zip",
+                          ".zip")
+              )
       ),
       
       # Fourth tab content
