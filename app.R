@@ -25,7 +25,7 @@ ui <- dashboardPage(
                   title = "Entrez du texte ici",
                   solidHeader = FALSE,
                   collapsible = FALSE,
-                  width = 3,
+                  width = 4,
                   "Des truc peuvent s'écrire ici",
                   textAreaInput(inputId="boite_lisib",
                                 label = "",
@@ -38,16 +38,22 @@ ui <- dashboardPage(
                 box (
                   title = "Résultats",
                   solidHeader = FALSE,
-                  width = 9,
+                  width = 8,
                   tabBox(
                     width = 12,
                     side = "left", height = "250px",
                     selected = "Indices standardisés",
-                    tabPanel("Indices standardisés", "Tab content 1"),
-                    tabPanel("Corpus éducation aux adultes", "Tab content 2"),
-                    tabPanel("Corpus personnalisé ", "Vous devez téléverser un corpus pour utiliser cette fonction. Voir la section Analyse de corpus.")
-                  ),
-                  actionButton("but_telecharger_lisib", "Télécharger les résultats")
+                    tabPanel("Indices standardisés", 
+                             "Le tableau des indices va aller ici", br(), br(),
+                             actionButton("but_lisib_stand", "Télécharger") 
+                    ),                      
+                    tabPanel("Estimation du niveau", 
+                             "En se basant sur notre corpus de textes, l'extrait de texte fourni est estimé au niveau suivant:", br()
+                    ),
+                    tabPanel("Niv. d'après corpus perso", 
+                             "Vous devez entrer un corpus en .zip pour utiliser cette fonction."
+                    )
+                  )
                 )
               ) #fin fluidRow
       ),
@@ -70,8 +76,10 @@ ui <- dashboardPage(
                 ),
                 
                 box (
+                  width = 9,
                   title = "Résultats",
-                  "Les indices de superposition vont apparaitre ici."
+                  "Les indices de superposition vont apparaitre ici.", br(),
+                  actionButton("but_telecharger_colab", "Télécharger les résultats")
                 )
               )
       ),
@@ -84,13 +92,23 @@ ui <- dashboardPage(
                           "application/zip",
                           ".zip")
               ),
-              "ici vont app les carac du corpus"
+              "ici vont app les carac du corpus", br(), br(),
+              actionButton("but_telecharger_ind_corpus", "Télécharger caractéristiques du corpus")
       ),
       
       # Fourth tab content
       tabItem(tabName = "parsing",
               h1("Parsing"),
-              "le long tableau va app ici"
+              tabBox(
+                width = 12,
+                side = "left",
+                selected = "Parsing complet",
+                tabPanel("Parsing complet", 
+                         actionButton("but_telecharger_parsing", "Télécharger le tableau d'analyse lexicale"), br(),
+                         "Tab content 1"),
+                tabPanel("Mots rares", actionButton("but_telecharger_motsrares", "Télécharger le tableau des mots rares"), br(),
+                         "Tab content 2")
+              )
       )
     )
   )
