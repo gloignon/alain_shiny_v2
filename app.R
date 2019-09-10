@@ -24,7 +24,11 @@ ui <- dashboardPage(
               fluidRow(
                 box (
                   title = "Entrez du texte ici",
+<<<<<<< HEAD
                   solidHeader = FALSE,
+=======
+                  solidHeader = TRUE,
+>>>>>>> e8677c58406c6f47564573b2170c8cd64e5a41f5
                   collapsible = FALSE,
                   width = 3,
                   "Des truc peuvent s'écrire ici",
@@ -35,6 +39,7 @@ ui <- dashboardPage(
                                 height = "400"),
                   actionButton("but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
+<<<<<<< HEAD
               
                 box (
                   title = "Résultats",
@@ -49,6 +54,12 @@ ui <- dashboardPage(
                     tabPanel("Corpus personnalisé ", "Vous devez téléverser un corpus pour utiliser cette fonction. Voir la section Analyse de corpus.")
                   ),
                   actionButton("but_telecharger_lisib", "Télécharger les résultats")
+=======
+                
+                box (
+                  title = "Résultats",
+                  "Les indices de lisibilité du parag vont apparaitre ici."
+>>>>>>> e8677c58406c6f47564573b2170c8cd64e5a41f5
                 )
               ) #fin fluidRow
       ),
@@ -84,8 +95,12 @@ ui <- dashboardPage(
                         accept = c(
                           "application/zip",
                           ".zip")
+<<<<<<< HEAD
               ),
               "ici vont app les carac du corpus"
+=======
+              )
+>>>>>>> e8677c58406c6f47564573b2170c8cd64e5a41f5
       ),
       
       # Fourth tab content
