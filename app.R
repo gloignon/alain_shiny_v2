@@ -38,23 +38,8 @@ ui <- dashboardPage(
                 box (
                   title = "Résultats",
                   solidHeader = FALSE,
-                  width = 8,
-                  tabBox(
-                    width = 12,
-                    side = "left", height = "250px",
-                    selected = "Indices standardisés",
-                    tabPanel("Indices standardisés", 
-                             "Le tableau des indices va aller ici", br(), br(),
-                             actionButton("but_lisib_stand", "Télécharger") 
-                    ),                      
-                    tabPanel("Estimation du niveau", 
-                             "En se basant sur notre corpus de textes, l'extrait de texte fourni est estimé au niveau suivant:", br()
-                    ),
-                    tabPanel("Niv. d'après corpus perso", 
-                             "Vous devez entrer un corpus en .zip pour utiliser cette fonction."
-                    )
-                  )
-                )
+                  width = 8
+                  ) #fin box de droite
               ) #fin fluidRow
       ),
       # Second tab content
