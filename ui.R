@@ -1,3 +1,5 @@
+library(shinydashboard)
+
 ui <- dashboardPage(
   
   dashboardHeader(title = "ALAIN"),
@@ -26,7 +28,7 @@ ui <- dashboardPage(
                   textAreaInput(inputId="boite_lisib",
                                 label = "",
                                 placeholder = "entrez texte ici",
-                                value = default.input,
+                                value = "",
                                 height = "400"),
                   actionButton("but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
@@ -51,7 +53,7 @@ ui <- dashboardPage(
                   textAreaInput(inputId="boite_overlap",
                                 label = "",
                                 placeholder = "entrez texte ici",
-                                value = default.input,
+                                value = "",
                                 height = "400"),
                   actionButton("but_calculer_overlap", "Calculer les superpositions")
                 ),

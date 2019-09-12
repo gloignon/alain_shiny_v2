@@ -16,7 +16,7 @@ upos.jamais.rares <- c("PUNCT", "DET", "ADP", "PRON", "AUX",
 udmodel_french <-
   udpipe_load_model(file = "french-gsd-ud-2.3-181115.udpipe") #chargement du modèle linguistique
 load("./mega_lexique.rda") #chargement de la méga db lexicale
-switch_dict("fr") # dico de syllabes
+#switch_dict("fr") # dico de syllabes
 
 dossier <- "./txt_parag"
 
