@@ -1,0 +1,12 @@
+name: ALAIN_shiny_v2
+title: ALAIN_shiny_v2
+username:
+account: gloignon
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1174927
+bundleId: 2408612
+url: https://gloignon.shinyapps.io/ALAIN_shiny_v2/
+when: 1568297750.89245
+asMultiple: FALSE
+asStatic: FALSE

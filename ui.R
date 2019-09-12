@@ -1,9 +1,5 @@
-#interface stuff
-
-library(shinydashboard)
-
 ui <- dashboardPage(
-
+  
   dashboardHeader(title = "ALAIN"),
   
   dashboardSidebar(
@@ -34,16 +30,16 @@ ui <- dashboardPage(
                                 height = "400"),
                   actionButton("but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
-              
+                
                 box (
                   title = "Résultats",
                   solidHeader = FALSE,
                   width = 8
-                  ) #fin box de droite
+                ) #fin box de droite
               ) #fin fluidRow
       ),
       # Second tab content
-        tabItem(tabName = "overlap",
+      tabItem(tabName = "overlap",
               h1("Évaluation des superpositions lexicales."),
               fluidRow(
                 box (
@@ -98,15 +94,3 @@ ui <- dashboardPage(
     )
   )
 )
-
-server <- function(input, output) {
-  set.seed(122)
-  histdata <- rnorm(500)
-  
-  output$plot1 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
-  })
-}
-
-shinyApp(ui, server)
