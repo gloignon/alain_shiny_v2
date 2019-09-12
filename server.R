@@ -1,7 +1,3 @@
-library(DT) #pour tables dans shiny
-library(shinycssloaders)
-library(shinydashboard)
-
 server <- function(input, output) {
  
   observeEvent(input$but_calculer_lisib,{

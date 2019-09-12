@@ -8,11 +8,18 @@ library(tidyverse)
 library(utf8)
 library(quanteda)
 
+library(DT) #pour tables dans shiny
+library(shinycssloaders)
+library(shinydashboard)
+
 load("mega_lexique.rda")
 
 #---- init ----
 upos.jamais.rares <- c("PUNCT", "DET", "ADP", "PRON", "AUX",
                        "PART", "NUM", "SYM", "PROPN", "X", NA)
+
+content_categories <- c("VERB", "NOUN", "PROPN", "ADJ", "ADV") #utilisé quand on tag les content words
+
 udmodel_french <-
   udpipe_load_model(file = "french-gsd-ud-2.3-181115.udpipe") #chargement du modèle linguistique
 load("./mega_lexique.rda") #chargement de la méga db lexicale
@@ -159,6 +166,27 @@ PostTraitementLexique <- function(parsed.post) {
   parsed.post <- parsed.post[order(doc_id, paragraph_id, sentence_id, term_id)]
   
   return(parsed.post)
+}
+
+leParsing <- function(txt) {
+  
+  parsed.txt <- ParserTexte(txt)  # analyse lexicale avec udpipe, pourrait prendre quelques minutes...
+  parsed <- PostTraitementLexique(parsed.txt)
+  parsed$upos <- factor(parsed$upos)
+  
+  #petit ménage
+  parsed$xpos <- NULL
+  parsed$doc_id <- NULL
+  parsed$deps <- NULL
+  parsed$misc <- NULL
+  parsed$dep_rel <- NULL
+  parsed$head_token_id <- NULL
+  
+  #on tag les content words
+  parsed$isContent <- FALSE
+  parsed[upos %in% content_categories, isContent := TRUE]
+  
+  return(parsed)
 }
 
 MatcherLexemes <- function(lexemes, cles) {
