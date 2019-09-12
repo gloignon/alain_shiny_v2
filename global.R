@@ -4,7 +4,7 @@ library(udpipe)
 library(readr)
 library(tidyverse)
 #library(stringr)
-library(hyphenatr)
+#library(hyphenatr)
 library(utf8)
 library(quanteda)
 
