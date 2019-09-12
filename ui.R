@@ -1,4 +1,4 @@
-library(shinydashboard)
+
 
 ui <- dashboardPage(
   
@@ -28,15 +28,16 @@ ui <- dashboardPage(
                   textAreaInput(inputId="boite_lisib",
                                 label = "",
                                 placeholder = "entrez texte ici",
-                                value = "",
+                                value = "Je pense donc je suis.",
                                 height = "400"),
-                  actionButton("but_calculer_lisib", "Calculer les indices de lisibilité")
+                  actionButton(inputId = "but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
                 
                 box (
                   title = "Résultats",
                   solidHeader = FALSE,
-                  width = 8
+                  width = 8,
+                  DTOutput("tablo_index_lisib", width="100%")
                 ) #fin box de droite
               ) #fin fluidRow
       ),
@@ -88,7 +89,7 @@ ui <- dashboardPage(
                 selected = "Parsing complet",
                 tabPanel("Parsing complet", 
                          actionButton("but_telecharger_parsing", "Télécharger le tableau d'analyse lexicale"), br(),
-                         "Tab content 1"),
+                         DTOutput("parsed", width="100%")  %>% withSpinner(type=4) ),
                 tabPanel("Mots rares", actionButton("but_telecharger_motsrares", "Télécharger le tableau des mots rares"), br(),
                          "Tab content 2")
               )
