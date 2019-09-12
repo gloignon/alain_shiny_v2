@@ -1,5 +1,6 @@
 library(DT) #pour tables dans shiny
 library(shinycssloaders)
+library(shinydashboard)
 
 server <- function(input, output) {
  
