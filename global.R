@@ -10,8 +10,57 @@ library(quanteda)
 
 load("mega_lexique.rda")
 
+#---- constantes ----
+upos.jamais.rares <- c("PUNCT", "DET", "ADP", "PRON", "AUX",
+                       "PART", "NUM", "SYM", "PROPN", "X", NA)
+udmodel_french <-
+  udpipe_load_model(file = "french-gsd-ud-2.3-181115.udpipe") #chargement du modèle linguistique
+load("./mega_lexique.rda") #chargement de la méga db lexicale
+switch_dict("fr") # dico de syllabes
+
+dossier <- "./txt_parag"
+
 #----fonctions----
 
+#correspond à ce qui était dans le main dans la version console d'ALAIN.
+MainStuff <- function() {
+  txt <- ConstituerCorpus(dossier)  # lit les fichiers txt qui sont dans le dossier
+  parsed.txt <- ParserTexte(txt)  # analyse lexicale avec udpipe, pourrait prendre quelques minutes...
+  parsed.edit <- PostTraitementLexique(parsed.txt)
+  parsed.freq <- CalculerFreq(parsed.edit)
+  mots.rares <- FiltrerMotsRares(parsed.freq) #seuil.livre = 40, seuil.film = 40, 
+  #seuil.manulex = 20, seuil.eqol = 5
+  mots.rares.severe <-
+    FiltrerMotsRares(
+      parsed.freq,
+      seuil.livre = 20,
+      seuil.film = 20,
+      seuil.eqol = 2.5,
+      seuil.manulex = 10
+    )
+  mots.rares.laxe <-
+    FiltrerMotsRares(
+      parsed.freq,
+      seuil.livre = 80,
+      seuil.film = 80,
+      seuil.eqol = 10,
+      seuil.manulex = 40
+    )
+  
+  sommaire.corpus <- CalculerFog(parsed.freq)
+  
+  sommaire.doc <- sommaire.corpus$doc
+  new.fog <- textstat_readability(txt$text, measure = c("Strain", "FOG"))
+  sommaire.doc <-
+    cbind(sommaire.corpus$doc,
+          strain.syll = new.fog$Strain,
+          fog.syll = new.fog$FOG)
+  sommaire.doc %>% mutate_at(2:21, round, 3) -> sommaire.doc
+  
+  #et là il resterait à afficher ce tableau d'une manière glorieuse
+}
+  
+  
 ConstituerCorpus <- function (dossier) {
   #TODO: explorer une solution avec quanteda qui permettrait aussi de prendre un corpus en .zip
   #dossier = "./txt_parag_q"
