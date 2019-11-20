@@ -27,18 +27,26 @@ ui <- dashboardPage(
                   textAreaInput(inputId="boite_lisib",
                                 label = "",
                                 placeholder = "entrez texte ici",
-                                value = "Je pense donc je suis.",
+                                value = "Je pense donc je suis un fripon.",
                                 height = "400"),
                   actionButton(inputId = "but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
                 
                 box (
-                  title = "Résultats",
+                  title = "Sommaire des attributs lexicaux",
                   solidHeader = FALSE,
                   width = 8,
                   DTOutput("tablo_index_lisib", width="100%")
                 ) #fin box de droite
-              ) #fin fluidRow
+              ), #fin fluidRow
+              fluidRow(
+                box (
+                  title = "Mots rares",
+                  solidHeader = FALSE,
+                  width = 12,
+                  DTOutput("tablo_mots_rares", width = "100%")
+                )
+              )
       ),
       # Second tab content
       tabItem(tabName = "overlap",
@@ -85,12 +93,16 @@ ui <- dashboardPage(
               tabBox(
                 width = 12,
                 side = "left",
-                selected = "Parsing complet",
-                tabPanel("Parsing complet", 
-                         actionButton("but_telecharger_parsing", "Télécharger le tableau d'analyse lexicale"), br(),
+                selected = "Parsing de base",
+                tabPanel("Parsing de base", 
+                         actionButton("but_telecharger_parsing", "Télécharger le tableau d'analyse de base"), br(),
                          DTOutput("parsed", width="100%")  %>% withSpinner(type=4) ),
-                tabPanel("Mots rares", actionButton("but_telecharger_motsrares", "Télécharger le tableau des mots rares"), br(),
-                         "Tab content 2")
+                tabPanel("Parsing augmenté", 
+                         actionButton("but_telecharger_parsing_aug", "Télécharger le tableau d'analyse"), br(),
+                         DTOutput("parsedAug", width="100%")  %>% withSpinner(type=4) ),
+                tabPanel("Mots rares", 
+                         actionButton("but_telecharger_motsrares", "Télécharger le tableau des mots rares"), br(),
+                         DTOutput("tablo_mots_rares2", width = "100%"))
               )
       )
     )

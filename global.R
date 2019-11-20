@@ -67,7 +67,6 @@ MainStuff <- function() {
   #et là il resterait à afficher ce tableau d'une manière glorieuse
 }
   
-  
 ConstituerCorpus <- function (dossier) {
   #TODO: explorer une solution avec quanteda qui permettrait aussi de prendre un corpus en .zip
   #dossier = "./txt_parag_q"
@@ -106,7 +105,28 @@ ParserTexte <- function(txt) {
   return(parsed)
 }
 
+ProduireStatsPhrases <- function(parsed, mots.rares) {
+  cat("Dans ProduireStatsPhrases\n")
+  stats.phrase <-
+    parsed[, .(
+      nMots = .N,
+      nbVerbesConj = CompterVerbesConj(upos, feats),
+      propMR = round(CompterMotsRares(vraiTokenId, mots.rares) / .N, 2)
+    ), by = c("doc_id", "paragraph_id", "sentence_id")]
+  stats.phrase[, fog := (nMots * (propMR * 100)) * 0.4]
+  stats.phrase <-
+    stats.phrase[order(doc_id, paragraph_id, sentence_id)]
+  
+  cat("   J'ai trouvé ", nrow(stats.phrase), " phrase(s)." )
+  return (stats.phrase)
+}
+
+ProduireStatsParagraphes <- function(parsed, mots.rares, stats.phrases) {
+  
+}
+
 PostTraitementLexique <- function(parsed.post) {
+  cat("Dans PostTraitement lexique\n")
   #parsed.post = copy(parsed)
   
   #ajout d'un identifiant unique
@@ -125,8 +145,8 @@ PostTraitementLexique <- function(parsed.post) {
   parsed.post[is.na(upos) & is.na(lemma)]
   
   #mots de contenu vs autres
-  parsed.post$contenu <- TRUE
-  parsed.post[upos %in% upos.jamais.rares, contenu := FALSE]
+  #parsed.post$contenu <- TRUE
+  #parsed.post[upos %in% upos.jamais.rares, contenu := FALSE]
   
   #nettoyage des colonnes
   parsed.post$upos <- factor(parsed.post$upos)
@@ -171,16 +191,17 @@ PostTraitementLexique <- function(parsed.post) {
 leParsing <- function(txt) {
   
   parsed.txt <- ParserTexte(txt)  # analyse lexicale avec udpipe, pourrait prendre quelques minutes...
+  
   parsed <- PostTraitementLexique(parsed.txt)
   parsed$upos <- factor(parsed$upos)
   
   #petit ménage
-  parsed$xpos <- NULL
-  parsed$doc_id <- NULL
-  parsed$deps <- NULL
-  parsed$misc <- NULL
-  parsed$dep_rel <- NULL
-  parsed$head_token_id <- NULL
+  #parsed$xpos <- NULL
+  #parsed$doc_id <- NULL
+  #parsed$deps <- NULL
+  #parsed$misc <- NULL
+  #parsed$dep_rel <- NULL
+  #parsed$head_token_id <- NULL
   
   #on tag les content words
   parsed$isContent <- FALSE
@@ -248,11 +269,20 @@ CalculerFreq <- function(mon.lexique) {
   dt.freq$quant.lexique.livre <- dt.freq$quant.lexique.livre %>% replace_na(0)
   dt.freq$quant.manulex <- dt.freq$quant.manulex %>% replace_na(0)
   
+  dt.freq[, quant.multi := quant.eqol + quant.lexique.livre + quant.lexique.film +
+                   quant.manulex]
+  dt.freq[, jugFreq := as.numeric(quant.eqol &
+                                           quant.lexique.livre &
+                                           quant.lexique.film &
+                                           quant.manulex)]
+  
+  dt.freq <- dt.freq[order(vraiTokenId)]
   return(dt.freq)
 }
 
 FiltrerMotsRares <- function(mon.lexique, seuil.livre = 40, seuil.film = 40, 
                              seuil.manulex = 20, seuil.eqol = 5) {
+  cat("Dans FiltrerMotsRares\n")
   #mon.lexique <- copy(parsed.freq)
   
   #ex: un mot très fréquent va typiquement avoir 90 de quant
@@ -281,10 +311,10 @@ FiltrerMotsRares <- function(mon.lexique, seuil.livre = 40, seuil.film = 40,
     paragraph_id,
     sentence_id,
     vraiTokenId,
-    Eqol = round(max(quant.eqol), 2),
-    Lexique_film = round(max(quant.lexique.film), 2),
-    Lexique_livre = round(max(quant.lexique.livre), 2),
-    Manulex = round(max(quant.manulex), 2)
+    Eqol = round(max(quant.eqol, na.rm = TRUE), 2),
+    Lexique_film = round(max(quant.lexique.film, na.rm = TRUE), 2),
+    Lexique_livre = round(max(quant.lexique.livre, na.rm = TRUE), 2),
+    Manulex = round(max(quant.manulex, na.rm = TRUE), 2)
   ), by = c("doc_id", "token", "upos")])
   
   mini.rares <-
@@ -294,18 +324,18 @@ FiltrerMotsRares <- function(mon.lexique, seuil.livre = 40, seuil.film = 40,
 
 #---- caclcul de l'indice de Gunning et autres stats de parag ----
 
-CompterMotsRares <- function (id, mode = "default") {
+CompterMotsRares <- function (id, db.rares) {
   #reçoit un tableau de tokens et retourne le nb de mots rares
   #id = parsed.gunning[doc_id=="sec1_organes.txt", vraiTokenId]
-  if (mode == "severe" ) {
-    db.rares <- mots.rares.severe
-  } else {
-    if (mode == "laxe") {
-      db.rares <- mots.rares.laxe
-    } else {
-      db.rares <- mots.rares
-    }
-  } 
+  #if (mode == "severe" ) {
+  #  db.rares <- mots.rares.severe
+  #} else {
+  #  if (mode == "laxe") {
+  #    db.rares <- mots.rares.laxe
+  #  } else {
+  #    db.rares <- mots.rares
+  #  }
+  #} 
   rares <- id[id %in% db.rares$vraiTokenId]
   return(length(rares))
 }
@@ -332,44 +362,41 @@ CompterNDansDb <- function(freq, seuil = 0) {
   return(length(n))
 }
 
-CalculerFog <- function(parsed) {
-  #parsed <- copy(parsed.freq)
-  parsed.gunning <- parsed[compte == TRUE & !(upos %in% c("PUNCT"))] 
-  parsed.gunning[, quant.multi := quant.eqol + quant.lexique.livre + quant.lexique.film +
-                   quant.manulex]
-  parsed.gunning[, jugFreq := as.numeric(quant.eqol & quant.lexique.livre & 
-                                           quant.lexique.film & quant.manulex)]
+CalculerFog <- function(parsed, mots.rares) {
+  cat("Dans CalculerFog\n")
+
+  return (parsed.gunning)
   
   # Stats phrase (qui peuvent uniquement être calculées au niveau de la phrase)
   stats.phrase <-
     parsed.gunning[, .(
       nMots = .N,
       nbVerbesConj = CompterVerbesConj(upos, feats),
-      propMR = round(CompterMotsRares(vraiTokenId) / .N, 2)
+      propMR = round(CompterMotsRares(vraiTokenId, mots.rares) / .N, 2)
     ), by = c("doc_id", "paragraph_id", "sentence_id")]
-  stats.phrase[, fog:= (nMots * (propMR * 100)) * 0.4]
-  stats.phrase <- stats.phrase[order(doc_id, paragraph_id, sentence_id)]
+  stats.phrase[, fog := (nMots * (propMR * 100)) * 0.4]
+  stats.phrase <-
+    stats.phrase[order(doc_id, paragraph_id, sentence_id)]
   
   #stats par paragraphe
   stats.parag <- parsed.gunning[, .(
     nMots = .N,
     nbPhrase = uniqueN(sentence_id),
-    nMR = CompterMotsRares(vraiTokenId),
+    nMR = CompterMotsRares(vraiTokenId, mots.rares),
     nMREqol = .N - CompterNDansDb(quant.eqol, 5),
     nMRLexLiv = .N - CompterNDansDb(quant.lexique.livre, 40),
     nMRLexFil = .N - CompterNDansDb(quant.lexique.film, 40),
     nMRManu = .N - CompterNDansDb(quant.manulex, 30),
     nMLSyll = CompterMotsLongs(token, nb.syll, 3),
     nMLChar = CompterMotsLongs(token, longueur.mot, 8),
-    freqMoy = mean(quant.multi, na.rm=T)
+    freqMoy = mean(quant.multi, na.rm = T)
     # moyMotsPh = mean(nbMots
   ), by = c("doc_id", "paragraph_id")] #mots total et phrases dans le paragraphe
   
-  stats.parag[, ':='( #ajout de proportions
+  stats.parag[, ':='(#ajout de proportions
     #pMLSyll = round(nMLSyll / nMots, 2),
     #pMLChar = round(nMLChar / nMots, 2),
-    pMR = round(nMR / nMots, 2)
-  )]
+    pMR = round(nMR / nMots, 2))]
   stats.parag <- stats.parag[order(doc_id, paragraph_id)]
   
   #sommaire du corpus, par document (doc_id)
@@ -400,36 +427,36 @@ CalculerFog <- function(parsed) {
   #   fogChar = round((longMoyPh + (pMLChar * 100)) * 0.4, 2),
   #   fogFreq = round((longMoyPh + (pMR * 100)) * 0.4, 2)
   # )]
-  # 
+  #
   # #calcul alternatif pour les phrases
   # #ici la médiane de la longueur médiane des ph
   # indices.ph.doc <- stats.phrase[, .(
   #   longMedPh = median(nMots, na.rm = T)
   # ), by = "doc_id"]
-  # 
+  #
   # stats.doc <- merge(stats.doc, indices.ph.doc, by = "doc_id")
-  # 
+  #
   # stats.doc.freq <- parsed.gunning[!(upos %in% upos.jamais.rares), .(
   #   freqMedCont = round(median(quant.multi, na.rm = T), 2),
   #   jugFreqCont = round(mean(jugFreq, na.rm = T), 2)
   # ), by = "doc_id"]
   # stats.doc <- merge(stats.doc, stats.doc.freq, by = "doc_id")
   # stats.doc <- stats.doc[order(doc_id)]
-  #   
+  #
   # stats pour doc, méthode alternative
   
   stats.doc <- parsed.gunning[, .(
     nMots = .N,
-    nSyll = sum(nb.syll, na.rm=T),
+    nSyll = sum(nb.syll, na.rm = T),
     nPh = uniqueN(sentence_id),
     longMoyPh = .N / uniqueN(sentence_id),
-    freqLexLiv = round(mean(quant.lexique.livre, na.rm=T), 2),
-    freqLexFil = round(mean(quant.lexique.film, na.rm=T), 2),
-    freqEqol = round(mean(quant.eqol, na.rm=T), 2),
-    freqManu = round(mean(quant.manulex, na.rm=T), 2),
-    nMR = CompterMotsRares(vraiTokenId),
-    nMRSevere = CompterMotsRares(vraiTokenId, mode = "severe"),
-    nMRLaxe = CompterMotsRares(vraiTokenId, mode = "laxe"),
+    freqLexLiv = round(mean(quant.lexique.livre, na.rm = T), 2),
+    freqLexFil = round(mean(quant.lexique.film, na.rm = T), 2),
+    freqEqol = round(mean(quant.eqol, na.rm = T), 2),
+    freqManu = round(mean(quant.manulex, na.rm = T), 2),
+    nMR = CompterMotsRares(vraiTokenId, mots.rares),
+    #nMRSevere = CompterMotsRares(vraiTokenId, mode = "severe"),
+    #nMRLaxe = CompterMotsRares(vraiTokenId, mode = "laxe"),
     nMRLexLiv = CompterNDansDb(quant.lexique.livre, 35),
     totalFreq = sum(quant.lexique.livre)
   ), by = "doc_id"]
@@ -437,18 +464,18 @@ CalculerFog <- function(parsed) {
   stats.doc[, dale.chall.tout := 64 - (95 * (nMR / nMots)) - (0.69 * longMoyPh)]
   stats.doc[, strain := nSyll / (nPh / 3) / 10]
   stats.doc[, strain.alt := totalFreq / (nPh / 3) / 10]
-  stats.doc[, ':='(syllMoyPh = nSyll / nPh,
-                   pMRLexLiv = nMRLexLiv / nMots,
-                   pMR = nMR / nMots,
-                   pMRSevere = nMRSevere / nMots,
-                   pMRLaxe = nMRLaxe / nMots)]
+  stats.doc[, ':='(
+    syllMoyPh = nSyll / nPh,
+    pMRLexLiv = nMRLexLiv / nMots,
+    pMR = nMR / nMots,
+    #pMRSevere = nMRSevere / nMots,
+    #pMRLaxe = nMRLaxe / nMots
+  )]
   
   # voir https://ogg.osu.edu/media/documents/health_lit/STRAIN%20INDEX.pdf
   
   #head(stats.doc)
-  stats.doc.ph <- stats.phrase[, .(
-    fog = mean(fog, na.rm=T)
-  ), by = "doc_id"]
+  stats.doc.ph <- stats.phrase[, .(fog = mean(fog, na.rm = T)), by = "doc_id"]
   stats.doc <- merge(stats.doc, stats.doc.ph, by = "doc_id")
   #formules: fog = (long moyenne phrase + pourc mot diff) * 0.4
   #          Flesch: 206.835 – (1.015 x ASL) – (84.6 x ASW)
@@ -468,14 +495,11 @@ CalculerFog <- function(parsed) {
   
   #stats.parag
   #View(stats.parag)
-  #return(list(stats.doc = stats.doc, 
-  #            stats.phrase = stats.phrase, 
+  #return(list(stats.doc = stats.doc,
+  #            stats.phrase = stats.phrase,
   #            stats.parag = stats.parag))
-  result <- list(
-    ph = stats.phrase,
-    parag = stats.parag,
-    doc = stats.doc
-  )
+  result <- list(ph = stats.phrase,
+                 parag = stats.parag,
+                 doc = stats.doc)
   return(result)
 }
-
