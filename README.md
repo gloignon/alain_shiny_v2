@@ -1,5 +1,5 @@
-# alain_shiny_v2
-Analyseur Lexical Automatisé sur Internet
+# Analyseur Lexical Automatisé sur Internet
+*(Ou Analyseur Lexical Automatisé avec production d'Indices de lisibilité)
 
 Utilisation commerciale interdite à moins d'une entente préalable. 
 Utilisation non-commerciale permise avec mention de la source.
