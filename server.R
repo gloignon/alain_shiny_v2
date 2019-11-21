@@ -29,31 +29,43 @@ server <- function(input, output) {
       )
     
     values$statsPhrase <- ProduireStatsPhrases(parsed.freq, values$mots.rares)
-    
+    values$statsParag <- ProduireStatsParagraphes(parsed.freq, values$mots.rares, values$statsPhrase)
     #values$sommaire.corpus <- CalculerFog(parsed.freq, mots.rares)
     values$currentParsingAug <- values$currentParsing
     
-    output$tablo_index_lisib <- DT::renderDT({
-      values$statsPhrase
-    })
+    #output$tablo_index_lisib <- DT::renderDT({
+    #  values$statsPhrase
+    #})
     
-    output$tablo_mots_rares <- DT::renderDT({
+    output$tablo_stats_phrases <- DT::renderDT({
       #CalculerFog(parsed.freq, mots.rares)  
       #mots.rares
-      values$mots.rares
+      table <- values$statsPhrase
+      DT::datatable(table, options = list(scrollX = TRUE))
+    })
+    
+    output$tablo_stats_parag <- DT::renderDT({
+      #CalculerFog(parsed.freq, mots.rares)  
+      #mots.rares
+      table <- values$statsParag
+      DT::datatable(table, options = list(scrollX = TRUE))
+      
     })
     
   })
   
   observeEvent(input$tabs == "parsing",{
     output$parsed = DT::renderDT({
-      values$currentParsing
+      table <- values$currentParsing
+      DT::datatable(table, options = list(scrollX = TRUE))
     })
     output$parsedAug = DT::renderDT({
-      values$currentParsingAug
+      table <- values$currentParsingAug
+      DT::datatable(table, options = list(scrollX = TRUE))
     })
     output$tablo_mots_rares2 = DT::renderDT({
-      values$mots.rares
+      table <- values$mots.rares
+      DT::datatable(table, options = list(scrollX = TRUE))
     })
   })
   

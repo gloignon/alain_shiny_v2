@@ -107,22 +107,46 @@ ParserTexte <- function(txt) {
 
 ProduireStatsPhrases <- function(parsed, mots.rares) {
   cat("Dans ProduireStatsPhrases\n")
-  stats.phrase <-
+  stats.phrase <- unique(
     parsed[, .(
+      sentence,
       nMots = .N,
       nbVerbesConj = CompterVerbesConj(upos, feats),
       propMR = round(CompterMotsRares(vraiTokenId, mots.rares) / .N, 2)
-    ), by = c("doc_id", "paragraph_id", "sentence_id")]
+    ), by = c("doc_id", "paragraph_id", "sentence_id")])
   stats.phrase[, fog := (nMots * (propMR * 100)) * 0.4]
   stats.phrase <-
     stats.phrase[order(doc_id, paragraph_id, sentence_id)]
   
-  cat("   J'ai trouvé ", nrow(stats.phrase), " phrase(s)." )
+  #todo: nettoyer et garder ce qui est pertinent?
+  
+  cat("   J'ai trouvé ", nrow(stats.phrase), " phrase(s).\n" )
   return (stats.phrase)
 }
 
 ProduireStatsParagraphes <- function(parsed, mots.rares, stats.phrases) {
+  cat("Dans ProduireStatsParagraphes\n")
+  stats.parag <- parsed[, .(
+    nMots = .N,
+    nbPhrase = uniqueN(sentence_id),
+    nMR = CompterMotsRares(vraiTokenId, mots.rares),
+    nMREqol = .N - CompterNDansDb(quant.eqol, 5),
+    nMRLexLiv = .N - CompterNDansDb(quant.lexique.livre, 40),
+    nMRLexFil = .N - CompterNDansDb(quant.lexique.film, 40),
+    nMRManu = .N - CompterNDansDb(quant.manulex, 30),
+    nMLSyll = CompterMotsLongs(token, nb.syll, 3),
+    nMLChar = CompterMotsLongs(token, longueur.mot, 8),
+    freqMoy = mean(quant.multi, na.rm = T)
+    # moyMotsPh = mean(nbMots
+  ), by = c("doc_id", "paragraph_id")] #mots total et phrases dans le paragraphe
   
+  stats.parag[, ':='(#ajout de proportions
+    #pMLSyll = round(nMLSyll / nMots, 2),
+    #pMLChar = round(nMLChar / nMots, 2),
+    pMR = round(nMR / nMots, 2))]
+  stats.parag <- stats.parag[order(doc_id, paragraph_id)]
+  cat("   J'ai trouvé ", nrow(stats.parag), " paragraphe(s).\n" )
+  return(stats.parag)
 }
 
 PostTraitementLexique <- function(parsed.post) {

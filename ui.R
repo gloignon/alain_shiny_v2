@@ -22,7 +22,7 @@ ui <- dashboardPage(
                   title = "Entrez du texte ici",
                   solidHeader = FALSE,
                   collapsible = FALSE,
-                  width = 4,
+                  width = 6,
                   "Des truc peuvent s'écrire ici",
                   textAreaInput(inputId="boite_lisib",
                                 label = "",
@@ -31,23 +31,23 @@ ui <- dashboardPage(
                                 height = "400"),
                   actionButton(inputId = "but_calculer_lisib", "Calculer les indices de lisibilité")
                 ),
-                
-                box (
-                  title = "Sommaire des attributs lexicaux",
-                  solidHeader = FALSE,
-                  width = 8,
-                  DTOutput("tablo_index_lisib", width="100%")
-                ) #fin box de droite
               ), #fin fluidRow
-              fluidRow(
-                box (
-                  title = "Mots rares",
+              fluidRow(tabBox(
+                width = 12,
+                side = "left",
+                selected = "Stats phrases",
+                tabPanel (
+                  title = "Stats phrases",
                   solidHeader = FALSE,
-                  width = 12,
-                  DTOutput("tablo_mots_rares", width = "100%")
-                )
-              )
-      ),
+                  DTOutput("tablo_stats_phrases")
+                ),
+                tabPanel (
+                  title = "Stats parag",
+                  solidHeader = FALSE,
+                  DTOutput("tablo_stats_parag")
+                ) #fin box de droite
+              ))
+      ), 
       # Second tab content
       tabItem(tabName = "overlap",
               h1("Évaluation des superpositions lexicales."),
