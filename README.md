@@ -1,7 +1,7 @@
 # alain_shiny_v2
 Analyseur Lexical Automatisé sur Internet
 
-Utilisation commerciale interdite sans entente préalable. 
+Utilisation commerciale interdite à moins d'une entente préalable. 
 Utilisation non-commerciale permise avec mention de la source.
 
 Une description détaillée du projet est disponible au:
