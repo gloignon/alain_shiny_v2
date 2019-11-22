@@ -7,12 +7,16 @@ library(tidyverse)
 #library(hyphenatr)
 library(utf8)
 library(quanteda)
+library(tokenizers) #pour les n-grams
+
 
 library(DT) #pour tables dans shiny
 library(shinycssloaders)
 library(shinydashboard)
 
 load("mega_lexique.rda")
+
+default.overlap.box.content <- read_file("default_overlap.txt") #requiert readr
 
 #---- init ----
 upos.jamais.rares <- c("PUNCT", "DET", "ADP", "PRON", "AUX",
@@ -526,4 +530,85 @@ CalculerFog <- function(parsed, mots.rares) {
                  parag = stats.parag,
                  doc = stats.doc)
   return(result)
+}
+
+analOverlap <- function (parsed) {
+  cat("Dans analyse superpositions\n")
+  #--- pré-traitement ----
+  #tout en minuscules (sinon les lexies seront pas détectés comme étant la même chose)
+  #parsed$token <- sapply(parsed$token, tolower)
+  #parsed$lemma <- sapply(parsed$lemma, tolower)
+  parsed <- parsed[upos != "PUNCT"] #on enlève les ponctuations
+  parsed <- parsed[isContent == TRUE & compte == TRUE]
+  
+  
+  #--- comparaison ---
+  reference = parsed[paragraph_id==1]
+  ref.txt <- paste(reference$token, collapse=" ")    #on remet ça en texte pour les n-gram
+  nbParag <- max(parsed$paragraph_id)
+  
+  #overlaps <- vector(length=nbParag-1)
+  dt.overlaps <- data.table( #init
+    idParag = 1:nbParag,
+    nbOverlap = 0,
+    nbMotContenu=0,
+    nbMotOverNgram=0
+  )
+  
+  for (i in 1:nbParag ) {
+    iParag <- parsed[paragraph_id==i]
+    iOverlaps <- comparerParagSimple(reference, iParag)
+    dt.overlaps[i, "nbOverlap"] <- iOverlaps$nbOverlap
+    dt.overlaps[i, "nbMotContenu"] <- iOverlaps$nbMotContenu
+    dt.overlaps[i, "nbMotTotal"] <- nrow(parsed[paragraph_id == i])
+    compare.txt <- paste(iParag$token, collapse=" ")
+    dt.overlaps[i, "nbMotOverNgram"] <- comparerParagNgram(ref.txt, compare.txt, length(iParag$token), 2)  
+  }
+  
+  dt.overlaps[, propOverCont := round(nbOverlap / nbMotContenu, 2)]
+  dt.overlaps[, propOverTotal := round(nbOverlap / nbMotTotal, 2)]
+  dt.overlaps[, propMotOverNGram := round(nbMotOverNgram / nbMotTotal, 2)]
+  cat("    Analyse des superpositions terminée.\n")
+  return(dt.overlaps[idParag > 1])  
+}
+
+comparerParagSimple <- function(reference, parag) {
+  #méthode naive, on regarde juste les mots qui sont communs
+  ref.content <- reference[isContent == TRUE]
+  parag.content <- parag[isContent == TRUE]
+  
+  nbMotTotal <- length(parag$token)
+  u.reference <- unique(ref.content$lemma)
+  u.parag <- unique(parag.content$lemma)
+  nbOverlap <- length(intersect(u.reference, u.parag)) #retourne le nb d'overlaps
+  nbMotUnique <- length(u.parag)
+  
+  resultat <- list(
+    nbOverlap=nbOverlap, 
+    nbMotContenu=nbMotUnique,
+    nbMotTotal=nbMotTotal)
+  return (resultat)
+}
+
+#comparerParagNgram comparaison de ngrams ----
+comparerParagNgram <- function(ref.txt, compare.txt, n_max=12, n_min=2) {
+  ref.ngrams <- tokenize_ngrams(ref.txt, n = n_max, n_min=n_min, simplify=TRUE)
+  compare.ngrams <- tokenize_ngrams(compare.txt, n = n_max, n_min = n_min, simplify=TRUE)
+  
+  intersect.ngrams <- intersect(ref.ngrams, compare.ngrams)
+  dt.ngrams <- data.table(intersect.ngrams)
+  if (nrow(dt.ngrams) == 0) return (0) #si pas de mots en commun, alors on sort!
+  
+  dt.ngrams$nbMot <- count_words(dt.ngrams$intersect.ngrams)
+  dt.ngrams.tally <- dt.ngrams %>% group_by(nbMot) %>% tally()
+  
+  #prends un n-gram commun et vérifie s'il est unique
+  haystack <- paste(intersect.ngrams, collapse=" ")    #on remet ça en texte
+  dt.ngrams$nbOccur <- sapply(dt.ngrams$intersect.ngrams, str_count, string=haystack)
+  dt.ngrams.tally <- 
+    dt.ngrams[nbOccur == 1] %>% #on s'intéresse seulement aux ngrams uniques
+    group_by(nbMot) %>% tally()
+  overlap.ngram <- sum(dt.ngrams.tally$nbMot * dt.ngrams.tally$n) #nb de mots en overlap
+  #print(dt.ngrams.tally)
+  return (overlap.ngram)
 }

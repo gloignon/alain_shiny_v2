@@ -49,31 +49,36 @@ ui <- dashboardPage(
               ))
       ), 
       # Second tab content
-      tabItem(tabName = "overlap",
-              h1("Évaluation des superpositions lexicales."),
-              fluidRow(
-                box (
-                  title = "Entrez du texte ici",
-                  solidHeader = TRUE,
-                  collapsible = FALSE,
-                  width = 3,
-                  "Des truc peuvent s'écrire ici",
-                  textAreaInput(inputId="boite_overlap",
-                                label = "",
-                                placeholder = "entrez texte ici",
-                                value = "",
-                                height = "400"),
-                  actionButton("but_calculer_overlap", "Calculer les superpositions")
-                ),
-                
-                box (
-                  width = 9,
-                  title = "Résultats",
-                  "Les indices de superposition vont apparaitre ici.", br(),
-                  actionButton("but_telecharger_colab", "Télécharger les résultats")
-                )
-              )
-      ),
+      tabItem(
+        tabName = "overlap",
+        h1("Évaluation des superpositions lexicales."),
+        fluidRow(
+          box (
+            title = "Entrez du texte ici",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            width = 6,
+            "Des truc peuvent s'écrire ici",
+            textAreaInput(
+              inputId = "boite_overlap",
+              label = "",
+              placeholder = "entrez texte ici",
+              value = default.overlap.box.content,
+              height = "400"
+            ),
+            actionButton("but_calculer_overlap", "Calculer les superpositions")
+          )
+        ),
+        fluidRow(
+          box (
+            width = 9,
+            title = "Résultats",
+            DTOutput("tablo_overlaps", width="100%")  %>% withSpinner(type=4),
+            actionButton("but_telecharger_colab", "Télécharger les résultats")
+          )
+        )
+        
+      ), 
       
       # Third tab content
       tabItem(tabName = "corpus",

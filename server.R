@@ -54,6 +54,17 @@ server <- function(input, output) {
     
   })
   
+  observeEvent(input$tabs == "overlap",{
+    observeEvent(input$but_calculer_overlap,{
+      values$currentParsingOverlap <- leParsing(input$boite_overlap)
+      values$overlaps <- analOverlap(values$currentParsingOverlap)
+      output$tablo_overlaps = DT::renderDT({
+        table <- values$overlaps
+        DT::datatable(table, options = list(scrollX = TRUE))
+      })
+    })
+  })
+  
   observeEvent(input$tabs == "parsing",{
     output$parsed = DT::renderDT({
       table <- values$currentParsing

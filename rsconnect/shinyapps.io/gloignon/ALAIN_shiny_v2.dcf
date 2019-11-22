@@ -5,8 +5,8 @@ account: gloignon
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1174927
-bundleId: 2604593
+bundleId: 2607184
 url: https://gloignon.shinyapps.io/ALAIN_shiny_v2/
-when: 1574274713.19797
+when: 1574346832.57333
 asMultiple: FALSE
 asStatic: FALSE
