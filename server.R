@@ -30,6 +30,8 @@ server <- function(input, output) {
     
     values$statsPhrase <- ProduireStatsPhrases(parsed.freq, values$mots.rares)
     values$statsParag <- ProduireStatsParagraphes(parsed.freq, values$mots.rares, values$statsPhrase)
+    values$statsDoc <- ProduireStatsDoc(parsed.freq, values$mots.rares, values$statsPhrase, value$statsParag)
+    #values$pred <- PredireDiff(values$statsDoc, modele.diff5)
     #values$sommaire.corpus <- CalculerFog(parsed.freq, mots.rares)
     values$currentParsingAug <- values$currentParsing
     
@@ -48,6 +50,14 @@ server <- function(input, output) {
       #CalculerFog(parsed.freq, mots.rares)  
       #mots.rares
       table <- values$statsParag
+      DT::datatable(table, options = list(scrollX = TRUE))
+      
+    })
+    
+    output$tablo_stats_doc <- DT::renderDT({
+      #CalculerFog(parsed.freq, mots.rares)  
+      #mots.rares
+      table <- values$statsDoc
       DT::datatable(table, options = list(scrollX = TRUE))
       
     })

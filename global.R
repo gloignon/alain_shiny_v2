@@ -15,6 +15,9 @@ library(shinycssloaders)
 library(shinydashboard)
 
 load("mega_lexique.rda")
+#load("modele.lin")  #modele.diff
+load("modele.lin5")  #modele.diff5
+
 
 default.overlap.box.content <- read_file("default_overlap.txt") #requiert readr
 
@@ -151,6 +154,47 @@ ProduireStatsParagraphes <- function(parsed, mots.rares, stats.phrases) {
   stats.parag <- stats.parag[order(doc_id, paragraph_id)]
   cat("   J'ai trouvé ", nrow(stats.parag), " paragraphe(s).\n" )
   return(stats.parag)
+}
+
+ProduireStatsDoc <- function(parsed, mots.rares, stats.phrases, stats.parag) {
+  cat("Dans ProduireStatsDoc\n")
+  stats.doc <- parsed[, .(
+    nMots = .N,
+    nSyll = sum(nb.syll, na.rm = T),
+    nPh = uniqueN(sentence_id),
+    longMoyPh = .N / uniqueN(sentence_id),
+    freqLexLiv = round(mean(quant.lexique.livre, na.rm = T), 2),
+    freqLexFil = round(mean(quant.lexique.film, na.rm = T), 2),
+    freqEqol = round(mean(quant.eqol, na.rm = T), 2),
+    freqManu = round(mean(quant.manulex, na.rm = T), 2),
+    nMR = CompterMotsRares(vraiTokenId, mots.rares),
+    #nMRSevere = CompterMotsRares(vraiTokenId, mode = "severe"),
+    #nMRLaxe = CompterMotsRares(vraiTokenId, mode = "laxe"),
+    nMRLexLiv = CompterNDansDb(quant.lexique.livre, 35),
+    totalFreq = sum(quant.lexique.livre)
+  ), by = "doc_id"]
+  
+  stats.doc[, dale.chall.lex := 64 - (95 * (nMRLexLiv / nMots)) - (0.69 * longMoyPh)]
+  stats.doc[, dale.chall.tout := 64 - (95 * (nMR / nMots)) - (0.69 * longMoyPh)]
+  stats.doc[, strain := nSyll / (nPh / 3) / 10]
+  stats.doc[, strain.alt := totalFreq / (nPh / 3) / 10]
+  stats.doc[, ':='(
+    syllMoyPh = nSyll / nPh,
+    pMRLexLiv = nMRLexLiv / nMots,
+    pMR = nMR / nMots
+    #pMRSevere = nMRSevere / nMots,
+    #pMRLaxe = nMRLaxe / nMots
+  )]
+  
+  # voir https://ogg.osu.edu/media/documents/health_lit/STRAIN%20INDEX.pdf
+  
+  #head(stats.doc)
+  stats.doc.ph <- stats.phrases[, .(fog = mean(fog, na.rm = T)), by = "doc_id"]
+  stats.doc <- merge(stats.doc, stats.doc.ph, by = "doc_id")
+  
+  cat("J'ai trouvé ", nrow(stats.doc), "document(s)\n")
+  
+  return (stats.doc)
 }
 
 PostTraitementLexique <- function(parsed.post) {
@@ -611,4 +655,8 @@ comparerParagNgram <- function(ref.txt, compare.txt, n_max=12, n_min=2) {
   overlap.ngram <- sum(dt.ngrams.tally$nbMot * dt.ngrams.tally$n) #nb de mots en overlap
   #print(dt.ngrams.tally)
   return (overlap.ngram)
+}
+
+PredireDiff <- function (sommaire.doc, modele = modele.diff5) {
+
 }

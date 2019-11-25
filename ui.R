@@ -45,6 +45,11 @@ ui <- dashboardPage(
                   title = "Stats parag",
                   solidHeader = FALSE,
                   DTOutput("tablo_stats_parag")
+                ),
+                tabPanel (
+                  title = "Stats document",
+                  solidHeader = FALSE,
+                  DTOutput("tablo_stats_doc")
                 ) #fin box de droite
               ))
       ), 
